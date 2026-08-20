@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pulat GRP Competitor AI</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">PULAT • GRP MARKET INTELLIGENCE</p>
+        <h1>AI-анализатор конкурентов ГРП</h1>
+        <p class="muted">Текст, изображения и сайты конкурентов в одном локальном приложении.</p>
+      </div>
+      <span id="status" class="status">Проверка API…</span>
+    </header>
+
+    <nav class="tabs" aria-label="Разделы">
+      <button class="tab active" data-panel="text-panel">Текст</button>
+      <button class="tab" data-panel="image-panel">Изображение</button>
+      <button class="tab" data-panel="parse-panel">Сайт</button>
+      <button class="tab" data-panel="history-panel">История</button>
+    </nav>
+
+    <section id="text-panel" class="panel active">
+      <h2>Анализ конкурентного текста</h2>
+      <label>Компания <input id="text-company" maxlength="120" placeholder="Например, Halliburton"></label>
+      <label>Материал <textarea id="text-input" rows="10" placeholder="Вставьте описание услуг, оборудования или технологии…"></textarea></label>
+      <button id="text-submit" class="primary">Проанализировать</button>
+    </section>
+
+    <section id="image-panel" class="panel">
+      <h2>Анализ промышленного визуала</h2>
+      <label>Компания <input id="image-company" maxlength="120" placeholder="Название компании"></label>
+      <label>Изображение <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp"></label>
+      <button id="image-submit" class="primary">Проанализировать</button>
+    </section>
+
+    <section id="parse-panel" class="panel">
+      <h2>Selenium-анализ сайта</h2>
+      <label>Конкурент
+        <select id="competitor-select">
+          <option value="halliburton">Halliburton</option>
+          <option value="liberty">Liberty Energy</option>
+          <option value="jereh">Jereh</option>
+          <option value="slb">SLB</option>
+        </select>
+      </label>
+      <p class="muted">Открываются только разрешённые HTTPS-домены из config.py.</p>
+      <button id="parse-submit" class="primary">Открыть и проанализировать</button>
+    </section>
+
+    <section id="history-panel" class="panel">
+      <div class="row"><h2>Последние 10 запросов</h2><button id="history-clear" class="ghost">Очистить</button></div>
+      <div id="history-list"></div>
+    </section>
+
+    <section class="result-card" aria-live="polite">
+      <div class="row"><h2>Результат</h2><span id="busy" hidden>Обработка…</span></div>
+      <pre id="result">Выберите тип анализа.</pre>
+    </section>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
+
