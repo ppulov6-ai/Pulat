@@ -1,0 +1,13 @@
+ISOLATED EDGE CHECKS
+Temporary files and explicit test doubles only; no model inference results.
+Live .env, cache.json and ChromaDB are not modified.
+
+PASS cache save/reload
+PASS cache namespace isolation: TOP_K and source
+PASS empty answer rejected without writing
+PASS malformed JSON and wrong schema fail explicitly
+PASS cache hit bypasses generation and records actual timer
+PASS generation exception propagates without caching or success record
+PASS chunk boundary 500/501, empty text and invalid parameters
+
+RESULT: 7/7 checks passed.

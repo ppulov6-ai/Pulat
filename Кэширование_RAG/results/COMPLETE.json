@@ -1,0 +1,8 @@
+{
+  "status": "completed",
+  "clean_passes": 2,
+  "backend": "local",
+  "model": "Qwen2.5-3B-Instruct Q4_K_M",
+  "embeddings": "intfloat/multilingual-e5-small",
+  "original_documents": 3
+}
