@@ -1,0 +1,20 @@
+test_clear_and_empty_answer_rejection (test_regressions.CacheTests.test_clear_and_empty_answer_rejection) ... ok
+test_expiration_boundary_evicts_record (test_regressions.CacheTests.test_expiration_boundary_evicts_record) ... ok
+test_namespace_changes_never_reuse_old_answer (test_regressions.CacheTests.test_namespace_changes_never_reuse_old_answer) ... ok
+test_sources_survive_disk_roundtrip (test_regressions.CacheTests.test_sources_survive_disk_roundtrip) ... ok
+test_invalid_parameters_and_empty_document (test_regressions.ChunkTests.test_invalid_parameters_and_empty_document) ... ok
+test_long_paragraph_after_short_has_bounded_complete_coverage (test_regressions.ChunkTests.test_long_paragraph_after_short_has_bounded_complete_coverage) ... ok
+test_short_fact_is_preserved (test_regressions.ChunkTests.test_short_fact_is_preserved) ... ok
+test_zero_overlap_does_not_repeat_previous_text (test_regressions.ChunkTests.test_zero_overlap_does_not_repeat_previous_text) ... ok
+test_bypass_does_not_read_or_write_cache (test_regressions.PipelineTests.test_bypass_does_not_read_or_write_cache) ... ok
+test_empty_retrieval_skips_generation_and_cache (test_regressions.PipelineTests.test_empty_retrieval_skips_generation_and_cache) ... ok
+test_failed_generation_is_not_cached_or_logged_as_success (test_regressions.PipelineTests.test_failed_generation_is_not_cached_or_logged_as_success) ... ok
+test_repeat_skips_retrieval_and_generation_preserves_sources (test_regressions.PipelineTests.test_repeat_skips_retrieval_and_generation_preserves_sources) ... ok
+test_top_k_source_and_corpus_change_require_new_generation (test_regressions.PipelineTests.test_top_k_source_and_corpus_change_require_new_generation) ... ok
+test_empty_or_truncated_model_answer_is_rejected (test_regressions.ProviderAndConsoleTests.test_empty_or_truncated_model_answer_is_rejected) ... ok
+test_eof_exits_once_and_closes_provider (test_regressions.ProviderAndConsoleTests.test_eof_exits_once_and_closes_provider) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.039s
+
+OK
