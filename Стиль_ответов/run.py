@@ -46,6 +46,7 @@ def run():
                        target_modules=["c_attn","c_proj","c_fc"],fan_in_fan_out=True)
     model=get_peft_model(base,adapter)
     model.print_trainable_parameters()
+    trainable, total = model.get_nb_trainable_parameters()
     optimizer=torch.optim.AdamW((p for p in model.parameters() if p.requires_grad),lr=0.0005)
     samples=[]
     for row in data:
@@ -81,7 +82,7 @@ def run():
     rows=[dict(question=q,before=b,after=a) for q,b,a in zip(tests,before,after)]
     def brief(s):
         return 0 < len(s.split()) <= 25 and s.count("?")==1 and s.endswith("?")
-    report=dict(model=MODEL,revision=revision,train=len(data),test=len(tests),loss=losses,
+    report=dict(model=MODEL,revision=revision,trainable_parameters=trainable,total_parameters=total,train=len(data),test=len(tests),loss=losses,
                 brief_before=sum(map(brief,before)),brief_after=sum(map(brief,after)),examples=rows)
     (OUT/"report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print("RESULT_JSON "+json.dumps(report,ensure_ascii=False),flush=True)
