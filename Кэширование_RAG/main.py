@@ -91,7 +91,8 @@ def initialize_system():
     return embedding_store, rag_assistant, cache
 
 
-def answer_question(query: str, rag_assistant: RAGAssistant, cache: ResponseCache) -> str:
+def answer_question(query: str, rag_assistant: RAGAssistant, cache: ResponseCache, *,
+                    source_channel="console", detailed=False) -> str | dict:
     """
     Отвечает на вопрос пользователя с использованием кеша и RAG.
     
@@ -140,12 +141,14 @@ def answer_question(query: str, rag_assistant: RAGAssistant, cache: ResponseCach
         with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
     except Exception as exc:
-        rag_assistant.logger.log_interaction(query, type(exc).__name__, source="console.error",
+        rag_assistant.logger.log_interaction(query, type(exc).__name__, source=source_channel+".error",
             from_cache=hit, response_time_ms=round((time.perf_counter()-started)*1000))
         print(f"Ошибка обработки запроса: {type(exc).__name__}.")
         raise
-    rag_assistant.logger.log_interaction(query, answer, source="console", from_cache=hit,
+    rag_assistant.logger.log_interaction(query, answer, source=source_channel, from_cache=hit,
         response_time_ms=round(elapsed*1000))
+    if detailed:
+        return {"answer":answer, "from_cache":hit, "seconds":elapsed}
     return answer
 
 

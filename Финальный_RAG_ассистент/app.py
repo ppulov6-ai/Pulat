@@ -7,6 +7,7 @@ from provider import ModelError
 HELP = '''Команды:
   /help                 помощь
   /stats                модель, документы, кэш и параметры
+  /csv                  выгрузить журнал в runtime/logs.csv
   /sources              список файлов базы знаний
   /top_k 3              число фрагментов: от 1 до 10
   /source python.txt    поиск только в выбранном файле
@@ -50,7 +51,9 @@ def main():
                 if command in {'/help','help'}:
                     print(HELP);continue
                 if command in {'/stats','stats'}:
-                    print(json.dumps(pipeline.stats(),ensure_ascii=False,indent=2));continue
+                    print(json.dumps({**pipeline.stats(), 'interactions':pipeline.logger.get_stats()},ensure_ascii=False,indent=2));continue
+                if command=='/csv':
+                    print(pipeline.logger.export_to_csv(str(config.runtime_dir/'logs.csv')) or 'Журнал пуст');continue
                 if command=='/sources':
                     print('\n'.join(pipeline.vector_store.source_names));continue
                 if command=='/top_k':
