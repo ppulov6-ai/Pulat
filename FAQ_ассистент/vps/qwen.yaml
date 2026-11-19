@@ -4,6 +4,7 @@ services:
       MODEL_URL: http://qwen:8080/v1/chat/completions
       CHAT_MODEL: pulat-qwen
     networks:
+      default: {}
       dialogue_net: {}
   qwen:
     image: ghcr.io/ggml-org/llama.cpp:server

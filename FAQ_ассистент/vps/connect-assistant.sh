@@ -39,8 +39,8 @@ cleanup() {
 }
 trap cleanup EXIT
 "${candidate[@]}" up -d --no-deps qwen
-stage=$("${candidate[@]}" run -d --no-deps -e DB_PATH=:memory: -p 127.0.0.1::8080 portfolio | tail -1)
-port=$("${docker_cmd[@]}" port "$stage" 8080/tcp | cut -d: -f2)
+stage=$("${candidate[@]}" run -d --no-deps -e DB_PATH=:memory: -p 127.0.0.1:18242:8080 portfolio | tail -1)
+port=18242
 ready=false
 for i in {1..60}; do
   if "${docker_cmd[@]}" exec "$stage" node -e "fetch('http://qwen:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then ready=true; break; fi
