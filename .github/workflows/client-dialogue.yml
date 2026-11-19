@@ -1,0 +1,37 @@
+name: Диалоги с заказчиками и серверная модель
+on:
+  push:
+    paths:
+      - 'Стиль_ответов/v3/train.json'
+      - 'Стиль_ответов/v3/distill.py'
+      - '.github/workflows/client-dialogue.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Зависимости CPU
+        working-directory: Стиль_ответов
+        run: |
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements.txt
+      - name: Дообучение и контрольные ответы
+        working-directory: Стиль_ответов
+        env:
+          HF_HUB_DISABLE_XET: '1'
+        run: |
+          cd v3
+          python -u ../run.py
+          OPENBLAS_NUM_THREADS=1 python distill.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-dialogue-v3
+          path: Стиль_ответов/v3/result
+          if-no-files-found: error
