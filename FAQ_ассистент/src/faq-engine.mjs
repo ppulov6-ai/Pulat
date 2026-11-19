@@ -118,12 +118,19 @@ async function faqRequest(request, modelUrl, chatModel){
         {role:'assistant',content:'По какому признаку вы выбираете курьера для заказа?'},
         {role:'user',content:'По почтовому индексу, покупатель указывает его на последнем шаге.'},
         {role:'assistant',content:'Сохраним заказ до последнего шага. Когда покупатель введёт индекс, бот сверит его с зонами доставки и передаст заказ нужному курьеру. Где хранится список зон?'},
-        {role:'user',content:'У нас магазин запчастей. Многие клиенты знают только артикул.'},
-        {role:'assistant',content:'Клиент введёт артикул, бот найдёт позицию в каталоге и покажет наличие. В какой системе ведёте остатки?'}
       ];
+      // Keep the live conversation distinct from the illustrative example.
+      if(history.length)messages.splice(1);
       for(const [user,assistant] of history)messages.push({role:'user',content:user.slice(-650)},{role:'assistant',content:assistant.slice(-650)});
-      messages.push({role:'user',content:data.message.trim()});
-      const payload=chatModel?{model:chatModel,messages,temperature:0.2,seed:37,max_tokens:150,stream:false}:{message:data.message,history,facts};
+      const current=data.message.trim();
+      if(history.length){
+        const prior=history.map(([user])=>user.slice(-650)).join(' ');
+        messages[0].content += " При продолжении диалога объясни решение на конкретных вариантах клиента. Если есть два направления, назови оба и поясни, что отправить в каждое. Если данных мало, предложи уточнить их у клиента. Не заявляй, что уже умеешь распознавать вложения.";
+        messages.push({role:'user',content:"Моя задача: "+prior+"\nМоё уточнение: "+current});
+      }else{
+        messages.push({role:'user',content:current});
+      }
+      const payload=chatModel?{model:chatModel,messages,temperature:0,seed:37,max_tokens:180,stream:false}:{message:data.message,history,facts};
       const upstream=await fetch(modelUrl,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify(payload),signal:AbortSignal.timeout(90000)});
       if(!upstream.ok)throw Error();
