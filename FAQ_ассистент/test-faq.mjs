@@ -19,7 +19,8 @@ const cases=[
 for(const [message,expected,previous] of cases){
   const res=await post({message,previous});assert.equal(res.status,200);const data=await res.json();
   assert.equal(data.topic,expected,message);
-  if(expected.startsWith('price_'))assert.match(data.answer,/готовы обсудить/i);
+  if(data.link)assert.match(data.link.url,/^\/(?:#|logging)/);
+  if(expected.startsWith('price_')){assert.match(data.answer,/₽.*готовы обсудить/i);assert.equal(data.link,null);}
 }
 for(const invalid of [{message:' '},{message:'я'.repeat(1201)},{message:'тест',top_k:99},null]){
   assert.equal((await post(invalid)).status,400);

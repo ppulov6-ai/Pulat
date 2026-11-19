@@ -34,7 +34,7 @@
       history.push([text,data.answer]);
       if(history.length>3)history.shift();
       previous=data.topic;lastUser=text;pending.textContent=data.answer;
-      if(data.link){
+      if(data.link && /^\/(?:#[a-z][a-z0-9-]*|logging)$/.test(data.link.url)){
         const a=document.createElement('a');a.href=data.link.url;a.textContent=data.link.label;
         pending.append(document.createElement('br'),a);
       }

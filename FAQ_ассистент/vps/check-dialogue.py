@@ -22,5 +22,5 @@ for first, second, clues in [
     b = ask(second, [[first, a]]).lower()
     assert all(re.search(clue,b) for clue in clues) and not re.search('₽|рубл',b), 'Ответ требует ручной проверки'
 price=ask('Сколько стоит Telegram-бот для заявок?', [])
-assert '30 000' in price and 'обсуд' in price.lower()
+assert '41 600' in price and 'обсуд' in price.lower()
 assert not re.search(r'Какие конкретные шаги вы планируете', b, re.I)

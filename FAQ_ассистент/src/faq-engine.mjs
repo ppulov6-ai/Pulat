@@ -43,6 +43,11 @@ const contactLink={url:'/#contact',label:'Связаться с Пулатом'}
 function reply(id,answer,link,context=[]){
   return {topic:id,answer,link:link||contactLink,context};
 }
+function priceReply(kind){
+  const offer=prices[kind];
+  const amount=String(offer.amount).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+  return {topic:kind,answer:offer.scope+'. Ориентир по стоимости '+amount+' ₽. Готовы обсудить бюджет и объём. '+offer.question,link:null,context:[]};
+}
 function priceKind(s){
   if(/(?:crm|срм|црм).*(бот|телеграм|telegram)|(бот|телеграм|telegram).*(crm|срм|црм)/u.test(s))return 'price_crmbot';
   if(/битрикс|bitrix/.test(s))return 'price_crm';
@@ -64,11 +69,11 @@ function answerFAQ(message,previous='',lastUser='',topK=3){
   if(/цен[ауые]|стоимост|сколько.{0,18}(стоит|возьм|денег)|поч[её]м|прайс|бюджет|обойд[её]т|расцен|оцените|во сколько|дорого|дешевле|скидк|торг/.test(s)){
     const known={grp:'price_rag',repair:'price_bot',facade:'price_bot',faq:'price_bot',crm_known:'price_crm'};
     const kind=priceKind(s)||((s.split(/\s+/).length<=9)?prices[previous]&&previous||known[previous]||priceKind(lastUser):null);
-    if(kind)return reply(kind,byId[kind].answer,{url:prices[kind].url,label:'Посмотреть сопоставимый заказ'});
+    if(kind)return priceReply(kind);
     return reply('budget','Готовы обсудить бюджет. Что нужно оценить: бот для заявок, интеграцию с CRM или помощника по документам?');
   }
   if(previous==='budget' && priceKind(s)){
-    const kind=priceKind(s);return reply(kind,byId[kind].answer,{url:prices[kind].url,label:'Посмотреть сопоставимый заказ'});
+    const kind=priceKind(s);return priceReply(kind);
   }
   if(/гарант|обеща.{0,16}(прибыл|выручк|рост)/.test(s))return reply('guarantee',byId.guarantee.answer);
   if(/нефтебаз|yandex cloud|яндекс.{0,15}(ссылк|ошибк|докум)|фасад.?про|фасад pro|логирован|ругпт|дообуч|стил[ьяе] модел|контакт|связаться|позвонить|номер телефона/.test(s)){
@@ -110,7 +115,7 @@ async function faqRequest(request, modelUrl, chatModel){
     const facts=price?matched.answer:(fact?.answer||'');
     generating=true;
     try{
-      const system = "Ты технический консультант Пулата. Отвечай на русском от нашего лица, на вы. Объясни клиенту в двух-трёх предложениях, что конкретно сделает бот, в каком порядке и кому передаст результат. Используй названия объектов клиента из переписки. Уточняй только то, чего ещё не знаешь. На приветствие ответь приветствием. Не выдумывай цены и сроки. " +
+      const system = "Ты технический консультант Пулата. Отвечай на русском от нашего лица, на вы. Объясни клиенту в двух-трёх предложениях, что конкретно сделает бот, в каком порядке и кому передаст результат. Используй названия объектов клиента из переписки. Уточняй только то, чего ещё не знаешь. На приветствие ответь приветствием. Не выдумывай цены и сроки. Общайся здесь. Не предлагай биржи, внешние сайты или ссылки. " +
         (facts ? "Проверенные сведения: " + facts : "Стоимость зависит от задачи, условия готовы обсудить.");
       const messages=[
         {role:'system',content:system},
@@ -140,8 +145,10 @@ async function faqRequest(request, modelUrl, chatModel){
       let answer=generated.trim();
       if(price){
         const question=answer.match(/[^.!?\n]+\?/g)?.at(-1)?.trim();
-        const commercial=matched.answer.split(/(?<=[.!])\s+/).slice(0,2).join(' ');
-        answer=commercial+' '+(question&&!/\d/.test(question)?question:matched.answer.slice(commercial.length).trim());
+        const offer=prices[matched.topic];
+        const commercial=matched.answer.slice(0,-offer.question.length);
+        answer=commercial+(question&&!/\d|https?:|www\./i.test(question)?question:offer.question);
+
       }
       return json({answer,topic:matched.topic,model:chatModel||'rugpt-lora-v3',link:fact||price?matched.link:null});
     }catch{return json({error:'Модель временно недоступна'},503);}

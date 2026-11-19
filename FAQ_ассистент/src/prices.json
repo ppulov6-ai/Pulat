@@ -1,6 +1,26 @@
 {
- "price_bot":{"url":"https://freelancehunt.com/project/telegram-bot/735951.html","scope":"Telegram-бот с FAQ и заявками","amount":30000,"currency":"RUB"},
- "price_crm":{"url":"https://freelancehunt.com/project/vnedrenie-bitriks24/502176.html","scope":"Внедрение Битрикс24, без интеграции с 1С","amount":46000,"currency":"RUB"},
- "price_rag":{"url":"https://freelancehunt.com/project/ai-assistent-baza-znaniy-kompanii/1639697.html","scope":"Ассистент по базе знаний компании","amount":27000,"currency":"UAH"},
- "price_crmbot":{"url":"https://freelancehunt.com/project/crm-telegram-bot/1599854.html","scope":"Telegram CRM с ролями и отчётами","amount":2000,"currency":"USD"}
+  "price_bot": {
+    "scope": "Telegram-бот для заявок и ответов клиентам",
+    "amount": 41600,
+    "currency": "RUB",
+    "question": "Какие данные нужно передать менеджеру?"
+  },
+  "price_crm": {
+    "scope": "Внедрение Битрикс24 под ключ",
+    "amount": 112522,
+    "currency": "RUB",
+    "question": "Какие процессы нужно перенести в CRM?"
+  },
+  "price_rag": {
+    "scope": "Ассистент по базе знаний до 100 документов",
+    "amount": 143000,
+    "currency": "RUB",
+    "question": "Сколько документов нужно подключить?"
+  },
+  "price_crmbot": {
+    "scope": "Telegram CRM с распределением заявок и отчётами",
+    "amount": 45500,
+    "currency": "RUB",
+    "question": "Какие отчёты нужны руководителю?"
+  }
 }
