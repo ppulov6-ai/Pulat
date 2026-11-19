@@ -89,7 +89,7 @@ function answerFAQ(message,previous='',lastUser='',topK=3){
   return reply('fallback',fallback);
 }
 let generating=false;
-async function faqRequest(request, modelUrl){
+async function faqRequest(request, modelUrl, chatModel){
   const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
   if(request.method!=='POST')return json({error:'Требуется POST'},405);
   if(!request.headers.get('content-type')?.includes('application/json'))return json({error:'Нужен JSON'},415);
@@ -104,24 +104,31 @@ async function faqRequest(request, modelUrl){
     if(generating)return json({error:'Помощник занят. Повторите через минуту.'},429);
     const history=data.history??[];
     if(!Array.isArray(history)||history.length>3||history.some(pair=>!Array.isArray(pair)||pair.length!==2||pair.some(x=>typeof x!=='string'||x.length>2400)))return json({error:'Некорректная история'},400);
-    const matched=answerFAQ(data.message.trim(),'',history.at(-1)?.[0]||'',top);
+    const matched=answerFAQ(data.message.trim(),typeof data.previous==='string'?data.previous:'',history.at(-1)?.[0]||'',top);
     const price=Object.hasOwn(prices,matched.topic);
     const fact=faq.find(f=>f.id===matched.topic);
     const facts=price?matched.answer:(fact?.answer||'');
     generating=true;
     try{
+      const system = "Ты помощник Пулата Сафарова на сайте. Пиши по-русски, на вы, простыми словами. Помоги клиенту решить именно его задачу. Учитывай предыдущие реплики. Предложи конкретный следующий шаг и задай максимум один уместный вопрос. На простое приветствие ответь кратко. Не придумывай факты о Пулате, цены, сроки или обещания. Цену и объём готовы обсудить. " +
+        (facts ? "Проверенные сведения по запросу: " + facts : "Для точной цены потребуется обсудить задачу с Пулатом.");
+      const messages=[{role:'system',content:system}];
+      for(const [user,assistant] of history)messages.push({role:'user',content:user.slice(-650)},{role:'assistant',content:assistant.slice(-650)});
+      messages.push({role:'user',content:data.message.trim()});
+      const payload=chatModel?{model:chatModel,messages,temperature:0.2,seed:37,max_tokens:150,stream:false}:{message:data.message,history,facts};
       const upstream=await fetch(modelUrl,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({message:data.message,history,facts}),signal:AbortSignal.timeout(60000)});
+        body:JSON.stringify(payload),signal:AbortSignal.timeout(90000)});
       if(!upstream.ok)throw Error();
       const result=await upstream.json();
-      if(typeof result.answer!=='string'||!result.answer.trim())throw Error();
-      let answer=result.answer.trim();
+      const generated=chatModel?result.choices?.[0]?.message?.content:result.answer;
+      if(typeof generated!=='string'||!generated.trim())throw Error();
+      let answer=generated.trim();
       if(price){
         const question=answer.match(/[^.!?\n]+\?/g)?.at(-1)?.trim();
         const commercial=matched.answer.split(/(?<=[.!])\s+/).slice(0,2).join(' ');
         answer=commercial+' '+(question&&!/\d/.test(question)?question:matched.answer.slice(commercial.length).trim());
       }
-      return json({answer,topic:matched.topic,model:'rugpt-lora-v3',link:fact||price?matched.link:contactLink});
+      return json({answer,topic:matched.topic,model:chatModel||'rugpt-lora-v3',link:fact||price?matched.link:null});
     }catch{return json({error:'Модель временно недоступна'},503);}
     finally{generating=false;}
   }

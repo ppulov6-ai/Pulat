@@ -1,0 +1,21 @@
+name: Проверить локальный чат через HTTP
+on:
+  push:
+    paths:
+      - 'FAQ_ассистент/vps/connect-assistant.sh'
+      - 'FAQ_ассистент/vps/check-dialogue.py'
+      - 'FAQ_ассистент/vps/qwen.yaml'
+      - '.github/workflows/portfolio-model.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Проверить ответы генеративной модели на CPU
+        env:
+          PUBLIC_URL: http://127.0.0.1:18241
+        run: bash FAQ_ассистент/vps/connect-assistant.sh

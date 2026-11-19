@@ -1,0 +1,19 @@
+services:
+  portfolio:
+    environment:
+      MODEL_URL: http://qwen:8080/v1/chat/completions
+      CHAT_MODEL: pulat-qwen
+    networks:
+      dialogue_net: {}
+  qwen:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    volumes:
+      - ${MODEL_DIR:?MODEL_DIR is required}:/models:ro
+    command: ["-m", "/models/assistant.gguf", "--alias", "pulat-qwen", "--host", "0.0.0.0", "--port", "8080", "-c", "4096", "-t", "2", "-np", "1", "-b", "128", "-ub", "64"]
+    networks: [dialogue_net]
+    mem_limit: 1350m
+    cpus: 1.5
+    restart: unless-stopped
+networks:
+  dialogue_net:
+    internal: true

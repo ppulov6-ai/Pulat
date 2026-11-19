@@ -28,7 +28,7 @@
     const pending=appendMessage('Подбираю ответ…','bot');
     try{
       const result=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({message:text,previous,lastUser,history,top_k:3}),signal:AbortSignal.timeout(65000)});
+        body:JSON.stringify({message:text,previous,lastUser,history,top_k:3}),signal:AbortSignal.timeout(95000)});
       if(!result.ok)throw new Error();
       const data=await result.json();
       history.push([text,data.answer]);
