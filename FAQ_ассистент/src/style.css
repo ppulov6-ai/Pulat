@@ -10,3 +10,13 @@
 .chat-examples{display:flex;gap:.4rem;flex-wrap:wrap;margin:0 .8rem}.chat-examples button{font-size:.9rem}
 #chat-form{padding:.65rem .8rem .3rem}#chat-form label{display:block;font-size:.9rem}#chat-form div{display:flex;gap:.35rem}#chat-input{border:1px solid #82937e;border-radius:4px;font:inherit;padding:.55rem;min-width:0;flex:1}.chat-contact{margin:.25rem .8rem .85rem;font-size:.92rem}#chat-send:disabled{opacity:.55}
 footer{padding-bottom:5rem}.inline-chat{font-weight:bold}
+
+.practice-switch{border:0;padding:0;margin:0;min-width:0}
+.practice-sr,.practice-switch input{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.practice-switch label{display:inline-flex;align-items:center;min-height:44px;padding:.35rem .7rem;margin:0 .15rem .35rem 0;border:1px solid #91ad98;border-radius:5px;font-size:.94rem;cursor:pointer}
+.practice-switch input:checked+label,.practice-log-panel button{background:var(--paper);color:var(--ink)}
+.practice-switch input:focus-visible+label,.practice-log-panel button:focus-visible{outline:3px solid #ffb58a;outline-offset:3px}
+.practice-switch section{display:none;margin-top:1rem}
+#practice-repair:checked~.practice-repair-panel,#practice-log:checked~.practice-log-panel{display:block}
+.practice-log-panel button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:4px;padding:.65rem .9rem}
+.practice-log-panel form{margin:1rem 0}
