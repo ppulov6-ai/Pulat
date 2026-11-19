@@ -1,0 +1,6 @@
+{
+ "price_bot":{"url":"https://freelancehunt.com/project/telegram-bot/735951.html","scope":"Telegram-бот с FAQ и заявками","amount":30000,"currency":"RUB"},
+ "price_crm":{"url":"https://freelancehunt.com/project/vnedrenie-bitriks24/502176.html","scope":"Внедрение Битрикс24, без интеграции с 1С","amount":46000,"currency":"RUB"},
+ "price_rag":{"url":"https://freelancehunt.com/project/ai-assistent-baza-znaniy-kompanii/1639697.html","scope":"Ассистент по базе знаний компании","amount":27000,"currency":"UAH"},
+ "price_crmbot":{"url":"https://freelancehunt.com/project/crm-telegram-bot/1599854.html","scope":"Telegram CRM с ролями и отчётами","amount":2000,"currency":"USD"}
+}
