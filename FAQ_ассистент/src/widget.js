@@ -3,6 +3,7 @@
   const dialog=get('chat-widget'),launcher=get('chat-launcher'),input=get('chat-input');
   const messages=get('chat-messages'),send=get('chat-send');
   let previous='',lastUser='';
+  const history=[];
   function open(){
     if(!dialog.open)dialog.showModal();
     launcher.setAttribute('aria-expanded','true');
@@ -27,9 +28,11 @@
     const pending=appendMessage('Подбираю ответ…','bot');
     try{
       const result=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({message:text,previous,lastUser,top_k:3}),signal:AbortSignal.timeout(18000)});
+        body:JSON.stringify({message:text,previous,lastUser,history,top_k:3}),signal:AbortSignal.timeout(65000)});
       if(!result.ok)throw new Error();
       const data=await result.json();
+      history.push([text,data.answer]);
+      if(history.length>3)history.shift();
       previous=data.topic;lastUser=text;pending.textContent=data.answer;
       if(data.link){
         const a=document.createElement('a');a.href=data.link.url;a.textContent=data.link.label;

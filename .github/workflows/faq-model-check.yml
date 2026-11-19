@@ -1,0 +1,37 @@
+name: Проверка генерации FAQ на CPU
+on:
+  push:
+    paths:
+      - 'FAQ_ассистент/vps/model/**'
+      - '.github/workflows/faq-model-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  dialogue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-dialogue-v3
+          run-id: 44568452406
+          github-token: ${{ github.token }}
+          path: trained
+      - name: Проверить два хода диалога в пределах лимитов VPS
+        run: |
+          docker build -t faq-model FAQ_ассистент/vps/model
+          docker run -d --cpus=1 --memory=1300m --name dialogue -v "$PWD/trained/adapter:/adapter:ro" faq-model
+          trap 'docker logs dialogue' EXIT
+          for i in {1..90}; do
+            if docker exec dialogue python -c "import urllib.request;urllib.request.urlopen('http://localhost:8090/health')"; then break; fi
+            sleep 2
+          done
+          docker exec dialogue python probe.py | tee dialogue.txt
+        shell: bash
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dialogue-transcript
+          path: dialogue.txt

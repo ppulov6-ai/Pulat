@@ -51,8 +51,8 @@ async function demo(request, db, path) {
 }
 export default {async fetch(request,env) {
   const path=new URL(request.url).pathname;
-  if(path==='/chat')return faqRequest(request);
-  if(path==='/health' && request.method==='GET')return Response.json({status:'ok',faq:faq.length,topics:topics.length,model:'dialogue-v3-edge'});
+  if(path==='/chat')return faqRequest(request,env?.MODEL_URL);
+  if(path==='/health' && request.method==='GET')return Response.json({status:'ok',faq:faq.length,topics:topics.length,model:env?.MODEL_URL?'rugpt-lora-v3':'dialogue-v3-edge'});
   if(path==='/chat.js' && request.method==='GET')return new Response(widgetCode,{headers:{'Content-Type':'text/javascript; charset=utf-8'}});
   if (path==='/' && request.method==='GET') return new Response(home,{headers});
   if (path==='/style.css') return new Response(css,{headers:{'Content-Type':'text/css; charset=utf-8'}});

@@ -51,7 +51,7 @@ const server = http.createServer(async (req, res) => {
       init.body = Readable.toWeb(req);
       init.duplex = 'half';
     }
-    const reply = await app.fetch(new Request(url.origin + req.url, init), {DB});
+    const reply = await app.fetch(new Request(url.origin + req.url, init), {DB,MODEL_URL:process.env.MODEL_URL});
     res.writeHead(reply.status, Object.fromEntries(reply.headers));
     res.end(Buffer.from(await reply.arrayBuffer()));
   } catch (error) {

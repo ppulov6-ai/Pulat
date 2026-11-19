@@ -88,16 +88,42 @@ function answerFAQ(message,previous='',lastUser='',topK=3){
     return reply('handover','Понял. Для точной оценки понадобится разобрать детали. Отправьте Пулату описание задачи и пример результата.');
   return reply('fallback',fallback);
 }
-async function faqRequest(request){
+let generating=false;
+async function faqRequest(request, modelUrl){
   const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
   if(request.method!=='POST')return json({error:'Требуется POST'},405);
   if(!request.headers.get('content-type')?.includes('application/json'))return json({error:'Нужен JSON'},415);
   const reader=request.body?.getReader();if(!reader)return json({error:'Пустой запрос'},400);
   const chunks=[];let size=0;
   while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;
-    if(size>12000){await reader.cancel();return json({error:'Слишком большой запрос'},413);}chunks.push(value);}
+    if(size>36000){await reader.cancel();return json({error:'Слишком большой запрос'},413);}chunks.push(value);}
   let data;try{const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}data=JSON.parse(new TextDecoder().decode(bytes));}catch{return json({error:'Некорректный JSON'},400);}
   if(typeof data?.message!=='string'||!data.message.trim()||data.message.length>1200)return json({error:'Введите от 1 до 1200 символов'},400);
   const top=data.top_k??3;if(!Number.isInteger(top)||top<1||top>5)return json({error:'top_k от 1 до 5'},400);
+  if(modelUrl){
+    if(generating)return json({error:'Помощник занят. Повторите через минуту.'},429);
+    const history=data.history??[];
+    if(!Array.isArray(history)||history.length>3||history.some(pair=>!Array.isArray(pair)||pair.length!==2||pair.some(x=>typeof x!=='string'||x.length>2400)))return json({error:'Некорректная история'},400);
+    const matched=answerFAQ(data.message.trim(),'',history.at(-1)?.[0]||'',top);
+    const price=Object.hasOwn(prices,matched.topic);
+    const fact=faq.find(f=>f.id===matched.topic);
+    const facts=price?matched.answer:(fact?.answer||'');
+    generating=true;
+    try{
+      const upstream=await fetch(modelUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:data.message,history,facts}),signal:AbortSignal.timeout(60000)});
+      if(!upstream.ok)throw Error();
+      const result=await upstream.json();
+      if(typeof result.answer!=='string'||!result.answer.trim())throw Error();
+      let answer=result.answer.trim();
+      if(price){
+        const question=answer.match(/[^.!?\n]+\?/g)?.at(-1)?.trim();
+        const commercial=matched.answer.split(/(?<=[.!])\s+/).slice(0,2).join(' ');
+        answer=commercial+' '+(question&&!/\d/.test(question)?question:matched.answer.slice(commercial.length).trim());
+      }
+      return json({answer,topic:matched.topic,model:'rugpt-lora-v3',link:fact||price?matched.link:contactLink});
+    }catch{return json({error:'Модель временно недоступна'},503);}
+    finally{generating=false;}
+  }
   return json(answerFAQ(data.message.trim(),typeof data.previous==='string'?data.previous.slice(0,40):'',typeof data.lastUser==='string'?data.lastUser.slice(0,1200):'',top));
 }
