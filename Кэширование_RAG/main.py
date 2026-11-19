@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 from embeddings import EmbeddingStore, get_sample_documents
 from rag import RAGAssistant
 from cache import ResponseCache
+from db_logger import DatabaseLogger
 
 
 def initialize_system():
@@ -75,6 +76,9 @@ def initialize_system():
     print("✅ СИСТЕМА ГОТОВА К РАБОТЕ")
     print("=" * 70)
     
+    log_path = Path(os.getenv("LOG_DB", "results/logs.db"))
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    rag_assistant.logger = DatabaseLogger(str(log_path))
     rag_assistant.settings = settings
     records = embedding_store.collection.get(include=["documents", "metadatas"])
     corpus = sorted(zip(records["ids"], records["documents"], records["metadatas"]))
@@ -109,10 +113,11 @@ def answer_question(query: str, rag_assistant: RAGAssistant, cache: ResponseCach
     settings = rag_assistant.settings
     print("\n" + "=" * 70)
     print(f"ВОПРОС: {query}")
-    cached = cache.get(query)
-    hit = cached is not None
+    hit = False
     contexts = []
     try:
+        cached = cache.get(query)
+        hit = cached is not None
         if hit:
             answer = cached
         else:
@@ -134,10 +139,14 @@ def answer_question(query: str, rag_assistant: RAGAssistant, cache: ResponseCach
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        return answer
     except Exception as exc:
-        print(f"Ошибка: {type(exc).__name__}. Ответ не сохранён в кэш.")
+        rag_assistant.logger.log_interaction(query, type(exc).__name__, source="console.error",
+            from_cache=hit, response_time_ms=round((time.perf_counter()-started)*1000))
+        print(f"Ошибка обработки запроса: {type(exc).__name__}.")
         raise
+    rag_assistant.logger.log_interaction(query, answer, source="console", from_cache=hit,
+        response_time_ms=round(elapsed*1000))
+    return answer
 
 
 def interactive_mode(rag_assistant: RAGAssistant, cache: ResponseCache):
@@ -178,13 +187,18 @@ def interactive_mode(rag_assistant: RAGAssistant, cache: ResponseCache):
                 print("\n✓ Кеш очищен")
                 continue
             
-            if user_input.lower() == 'stats':
+            if user_input.lower() in ('stats', '/stats'):
+                print(rag_assistant.logger.get_stats())
                 print(f"\n📊 СТАТИСТИКА СИСТЕМЫ:")
                 print(f"  • Документов в ChromaDB: {rag_assistant.embedding_store.collection.count()}")
                 print(f"  • Записей в кеше: {cache.size()}")
                 print(f"  • Модель LLM: {rag_assistant.model}")
                 continue
             
+            if user_input.lower() == "/csv":
+                print(rag_assistant.logger.export_to_csv(str(rag_assistant.logger.db_path.with_suffix(".csv"))))
+                continue
+
             # Обрабатываем вопрос пользователя
             answer_question(user_input, rag_assistant, cache)
             
